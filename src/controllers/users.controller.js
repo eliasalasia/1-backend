@@ -40,34 +40,46 @@ export const indexUsers = async (req, res) => {
     }
 };
 
-// para crear un nuevo usuario
+// Crear un nuevo usuario
 export const createUser = async (req, res) => {
-    const { name, email, password, role } = req.body;
-    if (!name || !email || !password || !role) {
-        return res.status(400).json({ message: 'Please. Send all required fields' });
+    const { name, email, password, role, nivel, matricula } = req.body;
+    if (!name || !email || !password || !role || !nivel || !matricula) {
+        return res.status(400).json({ message: 'Please provide all required fields' });
     }
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({
-        name,
-        email,
-        password: hashedPassword,
-        role
-    });
-    await newUser.save();
-    res.status(201).json({ message: 'User created' });
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = new User({
+            name,
+            email,
+            password: hashedPassword,
+            role,
+            nivel,
+            matricula
+        });
+        await newUser.save();
+        res.status(201).json({ message: 'User created' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server Error' });
+    }
 };
 
-// para logearse
+// para logearse con matricula
 export const loginUser = async (req, res) => {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) {
-        return res.status(404).json({ message: 'User not found' });
+    const { matricula, password } = req.body;
+    try {
+        const user = await User.findOne({ matricula });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Invalid credentials' });
+        }
+        const token = jwt.sign({ id: user._id, role: user.role }, 'secretkey', { expiresIn: '1h' });
+        res.json({ token, user });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server Error' });
     }
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-        return res.status(400).json({ message: 'Invalid credentials' });
-    }
-    const token = jwt.sign({ id: user._id, role: user.role }, 'secretkey', { expiresIn: '1h' });
-    res.json({ token, user });
 };

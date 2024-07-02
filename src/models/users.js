@@ -29,6 +29,14 @@ const UserSchema = new Schema({
     date: {
         type: Date,
         default: Date.now
+    },
+    nivel: {
+        type: String,
+        enum: ['Elementary', 'A1', 'A2', 'B1'] 
+    },
+    matricula: {
+        type: String,
+        unique: true
     }
 });
 
