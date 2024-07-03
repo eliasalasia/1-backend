@@ -1,18 +1,19 @@
 import { Schema, Types, model } from "mongoose";
+import User from './users.js'
 
 const videoSchema = new Schema({
     video: {
         type: String,
         required: true
     },
-    titulo: {
+    title: {
         type: String,
         required: true,
     },
-    usuario: {
+    user: {
         type: Types.ObjectId,
         required: true,
-        ref: ''
+        ref: User
     }
 
 })

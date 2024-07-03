@@ -1,7 +1,15 @@
-import { Schema, model } from "mongoose";
+import { Schema, model } from 'mongoose';
+import AutoIncrementFactory from 'mongoose-sequence';
+import mongoose from 'mongoose';  // Añade esta línea para importar mongoose
+
+const AutoIncrement = AutoIncrementFactory(mongoose.connection);
 
 const UserSchema = new Schema({
     name: { 
+        type: String, 
+        required: true 
+    },
+    lastname: { 
         type: String, 
         required: true 
     },
@@ -35,9 +43,14 @@ const UserSchema = new Schema({
         enum: ['Elementary', 'A1', 'A2', 'B1'] 
     },
     matricula: {
-        type: String,
+        type: Number,
         unique: true
     }
 });
 
+// Aplicar el plugin de auto-incremento al esquema
+UserSchema.plugin(AutoIncrement, { inc_field: 'matricula', start_seq: 202400 });
+
 export const User = model('User', UserSchema);
+
+export default User;

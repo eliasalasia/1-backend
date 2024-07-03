@@ -42,19 +42,20 @@ export const indexUsers = async (req, res) => {
 
 // Crear un nuevo usuario
 export const createUser = async (req, res) => {
-    const { name, email, password, role, nivel, matricula } = req.body;
-    if (!name || !email || !password || !role || !nivel || !matricula) {
+    const { name, lastname, email, password, role, nivel } = req.body;
+    if (!name ||!lastname || !email || !password || !role || !nivel) {
         return res.status(400).json({ message: 'Please provide all required fields' });
     }
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = new User({
             name,
+            lastname,
             email,
             password: hashedPassword,
             role,
-            nivel,
-            matricula
+            nivel
+            // No es necesario pasar matricula aquí
         });
         await newUser.save();
         res.status(201).json({ message: 'User created' });
