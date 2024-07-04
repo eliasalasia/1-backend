@@ -30,7 +30,7 @@ export const indexUsers = async (req, res) => {
             // Si el usuario es un student, obtener solo su propio usuario
             const user = await User.findById(
                 id,
-                '_id name lastname email role videos nivel matricula profileImage' // Proyección de campos
+                '_id name lastname email role videos nivel matricula' // Proyección de campos
             );
             if (!user) {
                 return res.status(404).json({ message: 'User not found' });
