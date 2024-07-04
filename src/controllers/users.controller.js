@@ -7,7 +7,7 @@ import jwt from 'jsonwebtoken';
 export const indexUsers = async (req, res) => {
     // Obtener el token del encabezado de la solicitud
     const token = req.headers.authorization?.split(' ')[1];
-    
+
     try {
         // Verificar si hay token presente
         if (!token) {
@@ -16,16 +16,22 @@ export const indexUsers = async (req, res) => {
 
         // Decodificar el token para obtener el id y el rol del usuario
         const decoded = jwt.verify(token, 'secretkey');
-        const { id, role } = decoded;
+        const { id, role, nivel } = decoded; // Añadir nivel aquí
 
         // Verificar el rol para determinar el acceso
         if (role === 'teacher') {
-            // Si el usuario es un teacher, obtener todos los usuarios
-            const users = await User.find();
-            res.json(users);
+            // Si el usuario es un teacher, obtener todos los estudiantes con el mismo nivel
+            const students = await User.find(
+                { role: 'student', nivel: nivel }, // Filtrar por nivel
+                '_id name lastname email role videos nivel matricula' // Proyección de campos
+            );
+            res.json(students);
         } else if (role === 'student') {
             // Si el usuario es un student, obtener solo su propio usuario
-            const user = await User.findById(id);
+            const user = await User.findById(
+                id,
+                '_id name lastname email role videos nivel matricula profileImage' // Proyección de campos
+            );
             if (!user) {
                 return res.status(404).json({ message: 'User not found' });
             }
@@ -77,7 +83,11 @@ export const loginUser = async (req, res) => {
         if (!isMatch) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
-        const token = jwt.sign({ id: user._id, role: user.role }, 'secretkey', { expiresIn: '1h' });
+        const token = jwt.sign(
+            { id: user._id, role: user.role, nivel: user.nivel }, // Añadir nivel aquí
+            'secretkey', 
+            { expiresIn: '1h' }
+        );
         res.json({ token, user });
     } catch (error) {
         console.error(error);
