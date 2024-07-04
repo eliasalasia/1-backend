@@ -4,12 +4,13 @@ import { PORT } from "./config/config.js";
 import { usersRoutes } from './routes/users.routes.js';
 import { examRoutes } from './routes/exam.routes.js';
 import  videosRoutes  from './routes/videos.routes.js';
-
+import cors from 'cors'
 
 const app = express();
 
 connectDB();
 
+app.use(cors())
 app.use(express.json());
 app.use('/',usersRoutes); // Aquí usas usersRoutes para las rutas de usuarios
 app.use('/',examRoutes); // Aquí usas examRoutes para las rutas de exámenes
