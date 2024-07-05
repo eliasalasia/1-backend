@@ -1,14 +1,16 @@
-import { Router } from 'express'
-import { getById, index, remove, store, update } from '../controllers/videos.controller.js'
-import { handleUploadVideoError, validateDataVideo, validateVideoID } from '../middlewares/video.middlewares.js'
-import { uploadVideos } from '../config/multer.js'
+import { Router } from 'express';
+import { getVideoById, getAllVideos, deleteVideo, createVideo, updateVideo } from '../controllers/videos.controller.js';
+import { handleUploadVideoError, validateVideoData, validateVideoId,  } from '../middlewares/video.middlewares.js';
+import { uploadSingleVideo } from '../config/multer.js';
 
-const router = Router()
+// Configura las rutas utilizando Router de Express
+const router = Router();
 
-router.get('/', index)
-router.get('/:id', validateVideoID, getById)
-router.post('/', uploadVideos.single('video'), handleUploadVideoError, validateDataVideo, store)
-router.put('/:id', validateVideoID, uploadVideos.single('video'), handleUploadVideoError, validateDataVideo, update)
-router.delete('/:id', validateVideoID, remove)
+router.get('/', getAllVideos); // Ejemplo de ruta GET para obtener todos los videos
+router.get('/:id', validateVideoId, getVideoById); // Ruta GET con validación de ID de video
+router.post('/', uploadSingleVideo.single('video'), handleUploadVideoError, validateVideoData, createVideo); // Ruta POST con validación de datos de video
+router.put('/:id', validateVideoId, uploadSingleVideo.single('video'), handleUploadVideoError, validateVideoData, updateVideo); // Ruta PUT con validación de ID de video y datos de video
+router.delete('/:id', validateVideoId, deleteVideo); // Ruta DELETE con validación de ID de video
 
-export default router
+// Exporta las rutas configuradas
+export { router as videoRoutes };

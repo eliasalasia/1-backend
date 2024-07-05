@@ -1,88 +1,97 @@
-import videoModel from '../models/videos.js'
-import { Types } from 'mongoose'
-import fs from 'node:fs/promises'
-import path from 'node:path'
+import Video from '../models/videos.js';
+import { Types } from 'mongoose';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 
-export const index = async (req, res) => {
+export const getAllVideos = async (req, res) => {
   try {
-    const videos = await videoModel.find().populate('user').select('-__v')
-    res.json(videos)
+    const videos = await Video.find().populate('user').select('-__v');
+    res.json(videos);
   } catch (error) {
-    console.log(error)
-    return res.status(500).json({ message: 'Error interno' })
+    console.log(error);
+    return res.status(500).json({ message: 'Error interno' });
   }
-}
+};
 
-export const getById = async (req, res) => {
+export const getVideoById = async (req, res) => {
   try {
-    const { id } = req.params
+    const { id } = req.params;
 
-    const video = await videoModel.findOne({ _id: id }).populate('user').select('-__v')
-    if (!video) return res.status(404).json({ message: 'Video no encontrado' })
+    const video = await Video.findOne({ _id: id }).populate('user', '-password -__v').select('-__v');
+    if (!video) return res.status(404).json({ message: 'Video no encontrado' });
 
-    res.json(video)
+    res.json(video);
   } catch (error) {
-    console.log(error)
-    return res.status(500).json({ message: 'Error interno' })
+    console.log(error);
+    return res.status(500).json({ message: 'Error interno' });
   }
-}
+};
 
-export const store = async (req, res) => {
+export const createVideo = async (req, res) => {
   try {
-    const { title, user } = req.body
-    const { filename: video } = req.file
+      const { title, user } = req.body;
+      const { filename: video } = req.file;
 
-    // Crear el registro del video
-    const videoNuevo = await videoModel.create({
-      title, user, video
-    })
+      // Verificar si el usuario es estudiante
+      if (req.user.role !== 'student') {
+          return res.status(403).json({ message: 'Acceso no autorizado' });
+      }
 
-    if (videoNuevo) {
-      return res.status(201).json({ message: 'Video creado', data: videoNuevo })
-    }
+      // Crear el registro del video
+      const newVideo = await Video.create({
+          title, user, video
+      });
 
-    res.status(500).json({ message: 'No se pudo crear el video' })
+      // Asignar el video al usuario
+      req.user.videos.push(newVideo._id);
+      await req.user.save();
+
+      return res.status(201).json({ message: 'Video creado', data: newVideo });
   } catch (error) {
-    console.log(error)
-    return res.status(500).json({ message: 'Error interno' })
+      console.log(error);
+      return res.status(500).json({ message: 'Error interno' });
   }
-}
+};
 
-export const update = async (req, res) => {
+export const updateVideo = async (req, res) => {
   try {
-    const { id } = req.params
-    const { title, user } = req.body
-    const { filename: video } = req.file
+      const { id } = req.params;
+      const { title } = req.body;
 
-    const videoDB = await videoModel.findOne({ _id: id }).select('-__v')
+      const videoDB = await Video.findOne({ _id: id }).select('-__v');
+      if (!videoDB) return res.status(404).json({ message: 'Video no encontrado' });
 
-    // Eliminar video existente
-    const rutaVideo = path.resolve(`./uploads/${videoDB.video}`)
-    await fs.unlink(rutaVideo)
+      // Actualizar el título
+      videoDB.title = title;
 
-    videoDB.title = title
-    videoDB.user = user
-    videoDB.video = video
-    videoDB.save()
+      // Si se subió un nuevo video, actualizar y eliminar el antiguo
+      if (req.file) {
+          const oldVideoPath = path.resolve(`./uploads/${videoDB.video}`);
+          await fs.unlink(oldVideoPath).catch(err => console.log('Error eliminando archivo antiguo:', err));
 
-    res.json({ message: 'Video actualizado', data: videoDB })
+          videoDB.video = req.file.filename;
+      }
+
+      await videoDB.save();
+
+      res.json({ message: 'Video actualizado', data: videoDB });
   } catch (error) {
-    console.log(error)
-    return res.status(500).json({ message: 'Error interno' })
+      console.log(error);
+      return res.status(500).json({ message: 'Error interno' });
   }
-}
+};
 
-export const remove = async (req, res) => {
+export const deleteVideo = async (req, res) => {
   try {
-    const { id } = req.params
-    if (!Types.ObjectId.isValid(id)) return res.status(400).json({ message: 'ID inválido' })
+    const { id } = req.params;
+    if (!Types.ObjectId.isValid(id)) return res.status(400).json({ message: 'ID inválido' });
 
-    const video = await videoModel.findOneAndDelete({ _id: id })
-    if (!video) return res.status(404).json({ message: 'Video no encontrado' })
+    const video = await Video.findOneAndDelete({ _id: id });
+    if (!video) return res.status(404).json({ message: 'Video no encontrado' });
 
-    res.json({ message: 'Video eliminado', data: video })
+    res.json({ message: 'Video eliminado', data: video });
   } catch (error) {
-    console.log(error)
-    return res.status(500).json({ message: 'Error interno' })
+    console.log(error);
+    return res.status(500).json({ message: 'Error interno' });
   }
-}
+};

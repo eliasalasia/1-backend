@@ -1,7 +1,7 @@
-import { Schema, Types, model } from "mongoose";
-import User from './users.js'
+import { Schema, Types, model } from 'mongoose';
+import User from './users.js';
 
-const videoSchema = new Schema({
+const VideoSchema = new Schema({
     video: {
         type: String,
         required: true
@@ -15,9 +15,8 @@ const videoSchema = new Schema({
         required: true,
         ref: User
     }
+});
 
-})
+const Video = model('Video', VideoSchema);
 
-const videoModel = model('Video', videoSchema)
-
-export default videoModel
+export default Video;

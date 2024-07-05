@@ -1,8 +1,8 @@
 
 const corsOptions = {
-    origin: 'http://example.com', // Permite solicitudes solo desde este origen
-    methods: ['GET', 'POST'], // Métodos HTTP permitidos
+    origin: 'http://localhost:5173', // Permite solicitudes solo desde este origen
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos HTTP permitidos
     allowedHeaders: ['Content-Type'], // Encabezados permitidos
   };
   
-  app.use(cors(corsOptions));
+export default corsOptions
