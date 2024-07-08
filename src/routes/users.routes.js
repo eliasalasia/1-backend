@@ -11,4 +11,4 @@ router.post('/users', uploadProfileImage.single('profileImage'), createUser); //
 router.post('/login', loginUser); // Ruta para logearse
 router.put('/users/:id', authorize, uploadProfileImage.single('profileImage'), updateUser); // Actualizar información de usuario con la imagen de perfil
 
-export { router as usersRoutes };
+export { router as usersRoutes }; 

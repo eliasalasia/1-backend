@@ -54,4 +54,4 @@ export const handleUploadVideoError = (err, req, res, next) => {
         return res.status(500).json({ message: 'Error al subir el video', error: err.message });
     }
     next();
-};
+}; 
