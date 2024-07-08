@@ -9,6 +9,10 @@ const ExamenSchema = new Schema({
         type: String,
         required: true
     },
+    nivel:{
+        type: String,
+        enum: ['Elementary', 'A1', 'A2', 'B1'] 
+    },
     date: {
         type: Date,
         required: true
