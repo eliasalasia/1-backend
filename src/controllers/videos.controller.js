@@ -26,20 +26,22 @@ export const getVideoById = async (req, res) => {
     return res.status(500).json({ message: 'Error interno' });
   }
 };
-
 export const createVideo = async (req, res) => {
   try {
-      const { title, user } = req.body;
+      console.log('req.user:', req.user); // Log para depuración
+      console.log('req.body:', req.body); // Log para depuración
+      console.log('req.file:', req.file); // Log para depuración
+
+      const { title } = req.body;
       const { filename: video } = req.file;
 
-      // Verificar si el usuario es estudiante
-      if (req.user.role !== 'student') {
-          return res.status(403).json({ message: 'Acceso no autorizado' });
-      }
+      // Ya no necesitamos verificar el rol aquí, lo hacemos en el middleware validateVideoData
 
       // Crear el registro del video
       const newVideo = await Video.create({
-          title, user, video
+          title,
+          user: req.user._id, // Usamos el ID del usuario autenticado
+          video
       });
 
       // Asignar el video al usuario
