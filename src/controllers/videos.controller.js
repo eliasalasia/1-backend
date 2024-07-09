@@ -95,3 +95,24 @@ export const deleteVideo = async (req, res) => {
     return res.status(500).json({ message: 'Error interno' });
   }
 };
+
+export const sendVideo = async (req, res) =>{
+  try {
+    const { id } = req.params;
+
+    const video = await Video.findOne({ _id: id }).populate('user', '-password -__v').select('-__v');
+    if (!video) return res.status(404).json({ message: 'Video no encontrado' });
+
+    const {video: videoName} = video
+    const rutaVideo = path.resolve(`./uploads/${videoName}`)
+    const existVideo = await fs.stat(rutaVideo)
+  
+    if (!existVideo) {
+    return res.status(404).json({message: 'The video does not exist'})
+    }
+    res.sendFile(rutaVideo)
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: 'Error interno' });
+  }
+};
