@@ -5,7 +5,9 @@ import path from 'node:path';
 
 export const getAllVideos = async (req, res) => {
   try {
-    const videos = await Video.find().populate('user').select('-__v');
+    const { user } = req.query;
+    const query = user ? { user } : {};
+    const videos = await Video.find(query).populate('user').select('-__v');
     res.json(videos);
   } catch (error) {
     console.log(error);
