@@ -5,8 +5,8 @@ import path from 'node:path';
 
 export const getAllVideos = async (req, res) => {
   try {
-    const { user } = req.query;
-    const query = user ? { user } : {};
+    const { userId } = req.query;
+    const query = userId ? { user: userId } : { user: req.user._id };
     const videos = await Video.find(query).populate('user').select('-__v');
     res.json(videos);
   } catch (error) {
@@ -14,6 +14,7 @@ export const getAllVideos = async (req, res) => {
     return res.status(500).json({ message: 'Error interno' });
   }
 };
+
 
 export const getVideoById = async (req, res) => {
   try {
