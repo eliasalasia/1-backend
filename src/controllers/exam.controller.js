@@ -12,36 +12,44 @@ export const indexExamenes = async (req, res) => {
         res.json(examenes)
     }
 };
+
 // Controlador para crear un nuevo examen // profesor
 export const createExamen = async (req, res) => {
     const token = req.headers.authorization?.split(' ')[1];
-    const decoded = jwt.verify(token, 'secretkey');
-    const { title, description, nivel, date, duration, teacher, questions } = req.body;
+    let decoded;
+    try {
+        decoded = jwt.verify(token, 'secretkey');
+    } catch (error) {
+        return res.status(401).json({ message: 'Token inválido' });
+    }
+
+    console.log("Datos recibidos:", req.body);
+    const { title, description, nivel, date, duration, questions } = req.body;
     if (!title || !description || !nivel || !date || !duration || !questions || questions.length === 0) {
-        return res.status(400).json({ message: 'Please send all required fields including questions array with at least one question.' });
+        return res.status(400).json({ message: 'Por favor, envía todos los campos requeridos, incluyendo el array de preguntas con al menos una pregunta.' });
     }
 
     try {
-
         if (decoded.role !== "teacher") {
-            res.status(400).json({ message: 'Credeciales invalidas' })
+            return res.status(403).json({ message: 'Credenciales inválidas. Solo los profesores pueden crear exámenes.' });
         }
+
         const newExamen = new Examen({
             title,
             description,
             nivel,
             date,
             duration,
-            teacher,
+            teacher: decoded.id, // Asumiendo que el ID del profesor está en el token
             questions
         });
 
         await newExamen.save();
-        res.status(201).json({ message: 'Examen created', examen: newExamen });
+        res.status(201).json({ message: 'Examen creado', examen: newExamen });
 
     } catch (error) {
-        console.error('Error creating examen:', error.message);
-        res.status(500).json({ message: 'Server error' });
+        console.error('Error al crear el examen:', error);
+        res.status(500).json({ message: 'Error del servidor', error: error.message });
     }
 };
 // Controlador para actualizar un examen existente // profesor
